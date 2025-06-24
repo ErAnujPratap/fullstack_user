@@ -1,0 +1,30 @@
+apiVersion: apps/apps/v1
+kind: Deployment
+metadata:
+  name: backend-Deployment
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: eranujpratap/backend:latest
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+        env:
+          env:
+            - name: DATABASE_HOST
+              value: "postgres-service"
+            - name: DATABASE_USER
+              value: "postgres"
+            - name: DATABASE_PASSWORD
+              value: "yourpassword"
