@@ -1,8 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-Deployment
+  name: backend
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -12,19 +13,12 @@ spec:
         app: backend
     spec:
       containers:
-      - name: backend
-        image: eranujpratap/backend:latest
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        ports:
-        - containerPort: 5000
-        env:
+        - name: backend
+          image: eranujpratp/backend:latest
+          ports:
+            - containerPort: 5000
           env:
-            - name: DATABASE_HOST
-              value: "postgres-service"
-            - name: DATABASE_USER
+            - name: DB_HOST
               value: "postgres"
-            - name: DATABASE_PASSWORD
-              value: "yourpassword"
+            - name: DB_PORT
+              value: "5432"
