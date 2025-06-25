@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: backend-deployment
 spec:
   replicas: 1
   selector:
@@ -17,8 +17,3 @@ spec:
           image: eranujpratp/backend:latest
           ports:
             - containerPort: 5000
-          env:
-            - name: DB_HOST
-              value: "postgres"
-            - name: DB_PORT
-              value: "5432"
