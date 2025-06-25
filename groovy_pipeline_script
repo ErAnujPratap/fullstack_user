@@ -1,0 +1,99 @@
+pipeline {
+    agent any
+
+    environment {
+        SONARQUBE = '3-tierproject'
+        SONAR_SCANNER = '/opt/sonar-scanner/bin/sonar-scanner'
+        DOCKERHUB_USERNAME = 'eranujpratap'
+        DOCKERHUB_CREDENTIALS = 'dockerhub-creds'
+        KUBECONFIG = '/var/lib/jenkins/.kube/config'
+    }
+
+    stages {
+        stage('Clone Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/ErAnujPratap/fullstack_user.git'
+            }
+        }
+
+        stage('SonarQube - Backend') {
+            steps {
+                dir('backend') {
+                    withSonarQubeEnv("${SONARQUBE}") {
+                        sh "${SONAR_SCANNER} -Dsonar.projectKey=backend_project -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000"
+                    }
+                }
+            }
+        }
+
+        stage('SonarQube - Frontend') {
+            steps {
+                dir('frontend') {
+                    withSonarQubeEnv("${SONARQUBE}") {
+                        sh "${SONAR_SCANNER} -Dsonar.projectKey=frontend_project -Dsonar.sources=. -Dsonar.host.url=http://localhost:9000"
+                    }
+                }
+            }
+        }
+
+        stage('Docker Build & Push - Backend') {
+            steps {
+                dir('backend') {
+                    script {
+                        def dockerImageTag = "${DOCKERHUB_USERNAME}/backend:latest"
+                        withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            sh """
+                                docker build -t $dockerImageTag .
+                                echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
+                                docker push $dockerImageTag
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Docker Build & Push - Frontend') {
+            steps {
+                dir('frontend') {
+                    script {
+                        def dockerImageTag = "${DOCKERHUB_USERNAME}/frontend:latest"
+                        withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            sh """
+                                docker build -t $dockerImageTag .
+                                echo "$PASSWORD" | docker login -u "$USERNAME" --password-stdin
+                                docker push $dockerImageTag
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Kubernetes Deploy') {
+             environment {
+                 KUBECONFIG = '/var/lib/jenkins/.kube/config'
+    }
+            steps {
+                script {
+                    sh 'kubectl apply -f k8s/postgres-deployment.yaml'
+                    sh 'kubectl apply -f k8s/postgres-service.yaml'
+                    sh 'kubectl apply -f k8s/backend-deployment.yaml'
+                    sh 'kubectl apply -f k8s/backend-service.yaml'
+                    sh 'kubectl apply -f k8s/frontend-deployment.yaml'
+                    sh 'kubectl apply -f k8s/frontend-service.yaml'
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "❌ Pipeline failed!"
+        }
+        success {
+            echo "✅ SonarQube scan and Docker image push completed successfully!"
+        }
+    }
+}
+
