@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: backend
-          image: eranujpratp/backend:latest
+          image: eranujpratap/backend:latest
           ports:
             - containerPort: 5000
