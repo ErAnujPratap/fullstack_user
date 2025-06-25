@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: eranujpratp/frontend:latest
+          image: eranujpratap/frontend:latest
           ports:
             - containerPort: 3000
