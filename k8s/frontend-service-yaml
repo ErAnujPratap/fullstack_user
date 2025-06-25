@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend-service
+  name: frontend-service     # Name of the service
 spec:
   selector:
-    app: frontend
+    app: frontend            # Matches the label in your frontend deployment
   ports:
     - protocol: TCP
-      port: 3000
-      targetPort: 3000
-  type: ClusterIP
+      port: 3000             # The port other services inside the cluster will use
+      targetPort: 3000       # The port exposed by the frontend container
+  type: ClusterIP            # Default internal-only service
