@@ -11,7 +11,7 @@ def get_db_connection():
         dbname='userdb',
         user='anuj',
         password='anuj123',
-        host='localhost',
+        host='postgres-server',
         port='5432'
     )
     return conn
